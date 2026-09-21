@@ -100,7 +100,12 @@ export default function ProjectDetailPage({
         {project.name}{" "}
         <span className="text-muted-foreground text-lg">({project.key})</span>
       </h1>
-
+      <Link
+        href={`/projects/${id}/chat`}
+        className="text-sm text-blue-500 hover:underline"
+      >
+        Open chat →
+      </Link>
       <Card className="mt-6">
         <CardHeader>
           <CardTitle>Members</CardTitle>
