@@ -12,9 +12,13 @@ export default function DashboardLayout({
         <Link href="/dashboard" className="font-bold">
           DevDesk
         </Link>
+
         <div className="flex items-center gap-2">
           <Link href="/projects" className="text-sm hover:underline">
             Projects
+          </Link>
+          <Link href="/ai" className="text-sm hover:underline">
+            AI Assistant
           </Link>
           <NotificationBell />
         </div>

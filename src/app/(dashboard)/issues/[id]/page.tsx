@@ -17,7 +17,14 @@ interface Issue {
   reporter: { name: string; email: string };
   assignee?: { name: string; email: string };
 }
-
+interface Analysis {
+  possibleCause: string;
+  investigationSuggestions: string[];
+  suggestedTestCases: string[];
+  edgeCases: string[];
+  suggestedSeverity: string;
+  suggestedPriority: string;
+}
 interface Comment {
   _id: string;
   content: string;
@@ -52,6 +59,9 @@ export default function IssueDetailPage({
   const [error, setError] = useState("");
   const [commentError, setCommentError] = useState("");
   const [activity, setActivity] = useState<ActivityItem[]>([]);
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState("");
   async function loadIssue() {
     const res = await fetch(`/api/issues/${id}`);
     const data = await res.json();
@@ -74,6 +84,37 @@ export default function IssueDetailPage({
     loadComments();
     loadActivity();
   }, [id]);
+  async function handleAnalyze() {
+    setAnalyzing(true);
+    setAnalysisError("");
+    setAnalysis(null);
+
+    const res = await fetch("/api/ai/analyze-issue", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ issueId: id }),
+    });
+    const data = await res.json();
+
+    if (!data.success) {
+      setAnalysisError(data.message);
+    } else {
+      setAnalysis(data.analysis);
+    }
+    setAnalyzing(false);
+  }
+
+  async function applySuggestion(
+    field: "severity" | "priority",
+    value: string,
+  ) {
+    await fetch(`/api/issues/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [field]: value }),
+    });
+    loadIssue();
+  }
   async function handleStatusChange(status: string) {
     const res = await fetch(`/api/issues/${id}`, {
       method: "PATCH",
@@ -145,7 +186,94 @@ export default function IssueDetailPage({
           )}
         </CardContent>
       </Card>
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle>AI Bug Analyzer</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Button onClick={handleAnalyze} disabled={analyzing} size="sm">
+            {analyzing ? "Analyzing..." : "Analyze with AI"}
+          </Button>
 
+          {analysisError && (
+            <p className="text-sm text-red-500">{analysisError}</p>
+          )}
+
+          {analysis && (
+            <div className="space-y-3 border-t pt-3 text-sm">
+              <div>
+                <p className="text-muted-foreground font-medium">
+                  Possible Cause
+                </p>
+                <p>{analysis.possibleCause}</p>
+              </div>
+
+              <div>
+                <p className="text-muted-foreground font-medium">
+                  Investigation Suggestions
+                </p>
+                <ul className="list-disc pl-5">
+                  {analysis.investigationSuggestions.map((s, i) => (
+                    <li key={i}>{s}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <p className="text-muted-foreground font-medium">
+                  Suggested Test Cases
+                </p>
+                <ul className="list-disc pl-5">
+                  {analysis.suggestedTestCases.map((s, i) => (
+                    <li key={i}>{s}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <p className="text-muted-foreground font-medium">Edge Cases</p>
+                <ul className="list-disc pl-5">
+                  {analysis.edgeCases.map((s, i) => (
+                    <li key={i}>{s}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="flex items-center justify-between rounded-md border p-2">
+                <span>
+                  Suggested severity:{" "}
+                  <strong>{analysis.suggestedSeverity}</strong>
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    applySuggestion("severity", analysis.suggestedSeverity)
+                  }
+                >
+                  Apply
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-between rounded-md border p-2">
+                <span>
+                  Suggested priority:{" "}
+                  <strong>{analysis.suggestedPriority}</strong>
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    applySuggestion("priority", analysis.suggestedPriority)
+                  }
+                >
+                  Apply
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
       <Card className="mt-4">
         <CardHeader>
           <CardTitle>Status</CardTitle>
