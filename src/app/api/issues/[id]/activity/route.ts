@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectDB } from "@/lib/db";
-import Project from "@/models/Project";
+import Issue from "@/models/Issue";
+import Activity from "@/models/Activity";
 import { getUserProjectRole, hasPermission } from "@/lib/authz";
 
 export async function GET(
@@ -14,18 +15,21 @@ export async function GET(
   }
 
   const { id } = await params;
+  await connectDB();
 
-  const role = await getUserProjectRole(session.user.id, id);
+  const issue = await Issue.findById(id);
+  if (!issue) {
+    return NextResponse.json({ success: false, message: "Not found" }, { status: 404 });
+  }
+
+  const role = await getUserProjectRole(session.user.id, issue.project.toString());
   if (!hasPermission(role, "viewProject")) {
     return NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 });
   }
 
-  await connectDB();
-  const project = await Project.findById(id).populate("members.user", "name email");
+  const activity = await Activity.find({ entityType: "issue", entityId: id })
+    .populate("user", "name email")
+    .sort({ createdAt: -1 });
 
-  if (!project) {
-    return NextResponse.json({ success: false, message: "Not found" }, { status: 404 });
-  }
-
-  return NextResponse.json({ success: true, project });
+  return NextResponse.json({ success: true, activity });
 }
