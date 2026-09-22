@@ -54,6 +54,6 @@ const issueSchema = new Schema<IIssue>(
 
 // compound index so VLX-101 style lookups are fast, and numbers stay unique per project
 issueSchema.index({ project: 1, issueNumber: 1 }, { unique: true });
-
+issueSchema.index({ title: "text", description: "text" });
 const Issue = models.Issue || model<IIssue>("Issue", issueSchema);
 export default Issue;

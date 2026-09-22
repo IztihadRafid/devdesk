@@ -43,4 +43,5 @@ const projectSchema = new Schema<IProject>(
 );
 
 const Project = models.Project || model<IProject>("Project", projectSchema);
+projectSchema.index({ name: "text", description: "text" });
 export default Project;

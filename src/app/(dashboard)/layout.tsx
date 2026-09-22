@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { NotificationBell } from "@/components/notification-bell";
+import { SearchBar } from "@/components/search-bar";
 
 export default function DashboardLayout({
   children,
@@ -8,11 +9,11 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="min-h-screen">
-      <header className="flex items-center justify-between border-b px-6 py-3">
+      <header className="flex items-center justify-between gap-4 border-b px-6 py-3">
         <Link href="/dashboard" className="font-bold">
           DevDesk
         </Link>
-
+        <SearchBar />
         <div className="flex items-center gap-2">
           <Link href="/projects" className="text-sm hover:underline">
             Projects
