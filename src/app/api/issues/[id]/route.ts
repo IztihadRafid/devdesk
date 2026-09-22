@@ -5,6 +5,8 @@ import { connectDB } from "@/lib/db";
 import Issue from "@/models/Issue";
 import { getUserProjectRole, hasPermission } from "@/lib/authz";
 import { logActivity, notify } from "@/lib/services/activity.service";
+import Comment from "@/models/Comment";
+import Activity from "@/models/Activity";
 const updateIssueSchema = z.object({
   title: z.string().min(2).optional(),
   description: z.string().optional(),
@@ -138,4 +140,35 @@ export async function PATCH(
   }
 
   return NextResponse.json({ success: true, issue });
+}
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  await connectDB();
+
+  const issue = await Issue.findById(id);
+  if (!issue) {
+    return NextResponse.json({ success: false, message: "Not found" }, { status: 404 });
+  }
+
+  const role = await getUserProjectRole(session.user.id, issue.project.toString());
+  if (!hasPermission(role, "deleteIssue")) {
+    return NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 });
+  }
+
+  await Promise.all([
+    Comment.deleteMany({ issue: id }),
+    Activity.deleteMany({ entityType: "issue", entityId: id }),
+    Issue.findByIdAndDelete(id),
+  ]);
+
+  return NextResponse.json({ success: true });
 }

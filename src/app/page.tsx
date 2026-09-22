@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -282,8 +282,8 @@ export default function Home() {
               <span className="font-semibold text-foreground">DevDesk</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Built by Iztihad Rafid — A portfolio project showcasing modern
-              development practices.
+              DevDesk — A modern project management and issue tracking platform
+              built by Iztihad Rafid.
             </p>
             <div className="flex gap-4">
               <Link

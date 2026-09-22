@@ -6,17 +6,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  StatusBadge,
-  SeverityBadge,
-  PriorityBadge,
-} from "@/components/status-badge";
+import { useRouter } from "next/navigation";
+import { SeverityBadge, PriorityBadge } from "@/components/status-badge";
+import { toast } from "sonner";
 interface Issue {
   _id: string;
   issueNumber: number;
@@ -81,6 +90,7 @@ export default function IssueDetailPage({
   const [members, setMembers] = useState<
     { user: { _id: string; name: string; email: string } }[]
   >([]);
+  const router = useRouter();
 
   async function loadMembers(projectId: string) {
     const res = await fetch(`/api/projects/${projectId}`);
@@ -111,7 +121,16 @@ export default function IssueDetailPage({
     loadComments();
     loadActivity();
   }, [id]);
-
+  async function handleDeleteIssue() {
+    const res = await fetch(`/api/issues/${id}`, { method: "DELETE" });
+    const data = await res.json();
+    if (data.success && issue) {
+      toast.success("Issue deleted");
+      router.push(`/projects/${issue.project}`);
+    } else {
+      toast.error(data.message || "Failed to delete issue");
+    }
+  }
   async function handleAssign(userId: string) {
     const res = await fetch(`/api/issues/${id}`, {
       method: "PATCH",
@@ -207,10 +226,38 @@ export default function IssueDetailPage({
 
   return (
     <main className="mx-auto max-w-2xl p-8">
-      <h1 className="text-2xl font-bold">{issue.title}</h1>
-      <p className="text-muted-foreground mt-1">
-        Reported by {issue.reporter?.name || issue.reporter?.email}
-      </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">{issue.title}</h1>
+          <p className="text-muted-foreground mt-1">
+            Reported by {issue.reporter?.name || issue.reporter?.email}
+          </p>
+        </div>
+
+        <AlertDialog>
+          <AlertDialogTrigger className="border-input inline-flex h-8 items-center justify-center rounded-md border px-3 text-sm text-red-500 hover:bg-red-500/10">
+            Delete Issue
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete this issue?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete this issue and all its comments.
+                This cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteIssue}
+                className="bg-red-500 hover:bg-red-600"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
 
       <Card className="mt-6">
         <CardHeader>

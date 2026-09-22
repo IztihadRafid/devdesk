@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Bug } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -13,6 +15,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { X } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 interface Member {
   user: { _id: string; name: string; email: string };
   role: string;
@@ -51,6 +65,7 @@ export default function ProjectDetailPage({
   const [error, setError] = useState("");
   const [issueError, setIssueError] = useState("");
   const [role, setRole] = useState("developer");
+  const router = useRouter();
   async function loadProject() {
     const res = await fetch(`/api/projects/${id}`);
     const data = await res.json();
@@ -67,7 +82,28 @@ export default function ProjectDetailPage({
     loadProject();
     loadIssues();
   }, [id]);
-
+  async function handleRemoveMember(userId: string) {
+    const res = await fetch(`/api/projects/${id}/members/${userId}`, {
+      method: "DELETE",
+    });
+    const data = await res.json();
+    if (data.success) {
+      toast.success("Member removed");
+      loadProject();
+    } else {
+      toast.error(data.message || "Failed to remove member");
+    }
+  }
+  async function handleDeleteProject() {
+    const res = await fetch(`/api/projects/${id}`, { method: "DELETE" });
+    const data = await res.json();
+    if (data.success) {
+      toast.success("Project deleted");
+      router.push("/projects");
+    } else {
+      toast.error(data.message || "Failed to delete project");
+    }
+  }
   async function handleAddMember(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -113,11 +149,37 @@ export default function ProjectDetailPage({
   if (!project) return <p className="p-8">Loading...</p>;
 
   return (
-    <main className="mx-auto max-w-2xl p-8">
-      <h1 className="text-2xl font-bold">
-        {project.name}{" "}
-        <span className="text-muted-foreground text-lg">({project.key})</span>
-      </h1>
+    <main className="mx-auto max-w-4xl p-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">
+          {project.name}{" "}
+          <span className="text-muted-foreground text-lg">({project.key})</span>
+        </h1>
+
+        <AlertDialog>
+          <AlertDialogTrigger className="border-input inline-flex h-8 items-center justify-center rounded-md border px-3 text-sm text-red-500 hover:bg-red-500/10">
+            Delete project
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete this project?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete {project.name} and all its issues,
+                chat history, and activity. This cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteProject}
+                className="bg-red-500 hover:bg-red-600"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
       <Link
         href={`/projects/${id}/chat`}
         className="text-sm text-blue-500 hover:underline"
@@ -130,9 +192,23 @@ export default function ProjectDetailPage({
         </CardHeader>
         <CardContent className="space-y-2">
           {project.members.map((m) => (
-            <div key={m.user._id} className="flex justify-between text-sm">
+            <div
+              key={m.user._id}
+              className="flex items-center justify-between text-sm"
+            >
               <span>{m.user.name || m.user.email}</span>
-              <span className="text-muted-foreground">{m.role}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">{m.role}</span>
+                {m.role !== "owner" && (
+                  <button
+                    onClick={() => handleRemoveMember(m.user._id)}
+                    className="  text-white bg-red-700 rounded-full p-1"
+                    title="Remove member"
+                  >
+                    <X className="h-3.5 w-3.5 font-bold" />
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </CardContent>
