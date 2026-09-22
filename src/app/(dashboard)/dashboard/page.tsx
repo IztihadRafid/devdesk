@@ -1,5 +1,5 @@
 "use client";
-
+import { FolderKanban, CircleDot, Loader, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
@@ -64,27 +64,39 @@ export default function DashboardPage() {
 
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Card>
-          <CardContent className="pt-6">
-            <p className="text-muted-foreground text-sm">Projects</p>
-            <p className="text-2xl font-bold">{stats.totalProjects}</p>
+          <CardContent className="flex items-center justify-between pt-6">
+            <div>
+              <p className="text-muted-foreground text-sm">Projects</p>
+              <p className="text-2xl font-bold">{stats.totalProjects}</p>
+            </div>
+            <FolderKanban className="text-muted-foreground/50 h-8 w-8" />
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
-            <p className="text-muted-foreground text-sm">Open Issues</p>
-            <p className="text-2xl font-bold">{openCount}</p>
+          <CardContent className="flex items-center justify-between pt-6">
+            <div>
+              <p className="text-muted-foreground text-sm">Open Issues</p>
+              <p className="text-2xl font-bold">{openCount}</p>
+            </div>
+            <CircleDot className="h-8 w-8 text-red-500/50" />
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
-            <p className="text-muted-foreground text-sm">In Progress</p>
-            <p className="text-2xl font-bold">{inProgressCount}</p>
+          <CardContent className="flex items-center justify-between pt-6">
+            <div>
+              <p className="text-muted-foreground text-sm">In Progress</p>
+              <p className="text-2xl font-bold">{inProgressCount}</p>
+            </div>
+            <Loader className="h-8 w-8 text-yellow-500/50" />
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
-            <p className="text-muted-foreground text-sm">Resolved</p>
-            <p className="text-2xl font-bold">{resolvedCount}</p>
+          <CardContent className="flex items-center justify-between pt-6">
+            <div>
+              <p className="text-muted-foreground text-sm">Resolved</p>
+              <p className="text-2xl font-bold">{resolvedCount}</p>
+            </div>
+            <CheckCircle2 className="h-8 w-8 text-green-500/50" />
           </CardContent>
         </Card>
       </div>

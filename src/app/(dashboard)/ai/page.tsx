@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-
+import { Sparkles } from "lucide-react";
 interface ConversationSummary {
   _id: string;
   title: string;
@@ -136,9 +136,12 @@ export default function AIAssistantPage() {
       <div className="flex flex-1 flex-col">
         <div className="flex-1 overflow-y-auto p-6">
           {messages.length === 0 && (
-            <p className="text-muted-foreground text-center">
-              Ask me anything about debugging, testing, or your code.
-            </p>
+            <div className="flex flex-col items-center justify-center pt-20 text-center">
+              <Sparkles className="text-muted-foreground/40 h-10 w-10" />
+              <p className="text-muted-foreground mt-3 text-sm">
+                Ask me anything about debugging, testing, or your code.
+              </p>
+            </div>
           )}
           <div className="mx-auto max-w-2xl space-y-4">
             {messages.map((m, i) => (

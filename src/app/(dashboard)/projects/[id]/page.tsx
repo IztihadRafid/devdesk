@@ -1,11 +1,11 @@
 "use client";
-
+import { StatusBadge } from "@/components/status-badge";
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
+import { Bug } from "lucide-react";
 interface Member {
   user: { _id: string; name: string; email: string };
   role: string;
@@ -161,7 +161,12 @@ export default function ProjectDetailPage({
 
       <div className="mt-6 space-y-2">
         {issues.length === 0 && (
-          <p className="text-muted-foreground">No issues yet.</p>
+          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-10 text-center">
+            <Bug className="text-muted-foreground/40 h-8 w-8" />
+            <p className="text-muted-foreground mt-2 text-sm">
+              No issues yet. Create the first one above.
+            </p>
+          </div>
         )}
         {issues.map((issue) => (
           <Link key={issue._id} href={`/issues/${issue._id}`}>
@@ -173,9 +178,7 @@ export default function ProjectDetailPage({
                   </span>
                   {issue.title}
                 </span>
-                <span className="text-muted-foreground text-sm">
-                  {issue.status}
-                </span>
+                <StatusBadge status={issue.status} />
               </CardContent>
             </Card>
           </Link>

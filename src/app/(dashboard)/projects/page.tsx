@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
+import { FolderKanban } from "lucide-react";
 interface Project {
   _id: string;
   name: string;
@@ -90,9 +90,23 @@ export default function ProjectsPage() {
       </Card>
 
       <div className="mt-8 space-y-3">
-        {loading && <p className="text-muted-foreground">Loading...</p>}
+        {loading && (
+          <div className="space-y-3">
+            {[1, 2].map((i) => (
+              <div
+                key={i}
+                className="h-16 animate-pulse rounded-lg border bg-muted/30"
+              />
+            ))}
+          </div>
+        )}
         {!loading && projects.length === 0 && (
-          <p className="text-muted-foreground">No projects yet.</p>
+          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
+            <FolderKanban className="text-muted-foreground/40 h-10 w-10" />
+            <p className="text-muted-foreground mt-3 text-sm">
+              No projects yet. Create your first one above.
+            </p>
+          </div>
         )}
         {projects.map((p) => (
           <Link key={p._id} href={`/projects/${p._id}`}>

@@ -5,7 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
-
+import {
+  StatusBadge,
+  SeverityBadge,
+  PriorityBadge,
+} from "@/components/status-badge";
 interface Issue {
   _id: string;
   issueNumber: number;
@@ -186,11 +190,11 @@ export default function IssueDetailPage({
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Priority</span>
-            <span>{issue.priority}</span>
+            <PriorityBadge priority={issue.priority} />
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Severity</span>
-            <span>{issue.severity}</span>
+            <SeverityBadge severity={issue.severity} />
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Assignee</span>
