@@ -4,6 +4,7 @@ import { useEffect, useState, use } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSession } from "next-auth/react";
 
 interface Issue {
   _id: string;
@@ -28,7 +29,7 @@ interface Analysis {
 interface Comment {
   _id: string;
   content: string;
-  author: { name: string; email: string };
+  author: { _id: string; name: string; email: string };
   createdAt: string;
 }
 interface ActivityItem {
@@ -62,6 +63,9 @@ export default function IssueDetailPage({
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState("");
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
+  const { data: session } = useSession();
   async function loadIssue() {
     const res = await fetch(`/api/issues/${id}`);
     const data = await res.json();
@@ -114,6 +118,20 @@ export default function IssueDetailPage({
       body: JSON.stringify({ [field]: value }),
     });
     loadIssue();
+  }
+  async function handleDeleteComment(commentId: string) {
+    await fetch(`/api/comments/${commentId}`, { method: "DELETE" });
+    loadComments();
+  }
+
+  async function handleEditSave(commentId: string) {
+    await fetch(`/api/comments/${commentId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: editContent }),
+    });
+    setEditingCommentId(null);
+    loadComments();
   }
   async function handleStatusChange(status: string) {
     const res = await fetch(`/api/issues/${id}`, {
@@ -302,15 +320,58 @@ export default function IssueDetailPage({
           )}
           {comments.map((c) => (
             <div key={c._id} className="border-b pb-3 last:border-0">
-              <div className="flex justify-between text-sm">
+              <div className="flex items-center justify-between text-sm">
                 <span className="font-medium">
                   {c.author?.name || c.author?.email}
                 </span>
-                <span className="text-muted-foreground text-xs">
-                  {new Date(c.createdAt).toLocaleString()}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground text-xs">
+                    {new Date(c.createdAt).toLocaleString()}
+                  </span>
+                  {session?.user?.id === c.author?._id &&
+                    editingCommentId !== c._id && (
+                      <>
+                        <button
+                          onClick={() => {
+                            setEditingCommentId(c._id);
+                            setEditContent(c.content);
+                          }}
+                          className="text-muted-foreground text-xs hover:underline"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteComment(c._id)}
+                          className="text-xs text-red-500 hover:underline"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                </div>
               </div>
-              <p className="mt-1 text-sm">{c.content}</p>
+
+              {editingCommentId === c._id ? (
+                <div className="mt-1 flex gap-2">
+                  <Input
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    className="text-sm"
+                  />
+                  <Button size="sm" onClick={() => handleEditSave(c._id)}>
+                    Save
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setEditingCommentId(null)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <p className="mt-1 text-sm">{c.content}</p>
+              )}
             </div>
           ))}
 

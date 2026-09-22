@@ -5,7 +5,7 @@ import { connectDB } from "@/lib/db";
 import Issue from "@/models/Issue";
 import { getUserProjectRole, hasPermission } from "@/lib/authz";
 import { callAI } from "@/lib/services/ai.service";
-
+import { checkRateLimit } from "@/lib/rate-limit";
 const requestSchema = z.object({
   issueId: z.string(),
 });
@@ -36,6 +36,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
   }
 
+const rateLimit = checkRateLimit(`ai-analyze:${session.user.id}`, 10, 60_000); // 10 requests per minute
+if (!rateLimit.allowed) {
+  return NextResponse.json(
+    { success: false, message: `Too many requests. Try again in ${rateLimit.retryAfterSeconds}s.` },
+    { status: 429 }
+  );
+}
   const body = await req.json();
   const parsed = requestSchema.safeParse(body);
   if (!parsed.success) {

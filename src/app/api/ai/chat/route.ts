@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { connectDB } from "@/lib/db";
 import AIConversation from "@/models/AIConversation";
 import { callAI } from "@/lib/services/ai.service";
-
+import { checkRateLimit } from "@/lib/rate-limit";
 const chatSchema = z.object({
   conversationId: z.string().nullable().optional(),
   message: z.string().min(1),
@@ -16,7 +16,13 @@ export async function POST(req: Request) {
   if (!session?.user?.id) {
     return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
   }
-
+const rateLimit = checkRateLimit(`ai-chat:${session.user.id}`, 20, 60_000);
+if (!rateLimit.allowed) {
+  return NextResponse.json(
+    { success: false, message: `Too many requests. Try again in ${rateLimit.retryAfterSeconds}s.` },
+    { status: 429 }
+  );
+}
   const body = await req.json();
   const parsed = chatSchema.safeParse(body);
   if (!parsed.success) {
