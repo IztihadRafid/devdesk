@@ -14,7 +14,7 @@ import {
   YAxis,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
+import { useSession } from "next-auth/react";
 interface Stats {
   totalProjects: number;
   statusCounts: { _id: string; count: number }[];
@@ -39,7 +39,8 @@ const COLORS = [
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
-
+  const { data: session } = useSession();
+  console.log(session);
   useEffect(() => {
     fetch("/api/dashboard/stats")
       .then((res) => res.json())
@@ -59,8 +60,27 @@ export default function DashboardPage() {
     stats.statusCounts.find((s) => s._id === "resolved")?.count || 0;
 
   return (
-    <main className="mx-auto max-w-5xl p-8">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+    <main className="mx-auto max-w-6xl p-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        {session?.user && (
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <p className="text-lg font-medium">{session.user.name}</p>
+              <p className="text-muted-foreground text-md">
+                {session.user.email}
+              </p>
+            </div>
+            {session?.user.image && (
+              <img
+                src={session.user.image}
+                alt={session?.user.name || "User"}
+                className="h-9 w-9 rounded-full"
+              />
+            )}
+          </div>
+        )}
+      </div>
 
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Card>

@@ -6,6 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   StatusBadge,
   SeverityBadge,
   PriorityBadge,
@@ -19,8 +26,9 @@ interface Issue {
   priority: string;
   severity: string;
   type: string;
+  project: string;
   reporter: { name: string; email: string };
-  assignee?: { name: string; email: string };
+  assignee?: { _id: string; name: string; email: string };
 }
 interface Analysis {
   possibleCause: string;
@@ -70,11 +78,22 @@ export default function IssueDetailPage({
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
   const { data: session } = useSession();
+  const [members, setMembers] = useState<
+    { user: { _id: string; name: string; email: string } }[]
+  >([]);
+
+  async function loadMembers(projectId: string) {
+    const res = await fetch(`/api/projects/${projectId}`);
+    const data = await res.json();
+    if (data.success) setMembers(data.project.members);
+  }
   async function loadIssue() {
     const res = await fetch(`/api/issues/${id}`);
     const data = await res.json();
-    if (data.success) setIssue(data.issue);
-    else setError(data.message);
+    if (data.success) {
+      setIssue(data.issue);
+      loadMembers(data.issue.project);
+    } else setError(data.message);
   }
 
   async function loadComments() {
@@ -92,6 +111,20 @@ export default function IssueDetailPage({
     loadComments();
     loadActivity();
   }, [id]);
+
+  async function handleAssign(userId: string) {
+    const res = await fetch(`/api/issues/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ assignee: userId }),
+    });
+    const data = await res.json();
+    if (!data.success) {
+      setError(data.message);
+      return;
+    }
+    loadIssue();
+  }
   async function handleAnalyze() {
     setAnalyzing(true);
     setAnalysisError("");
@@ -196,9 +229,26 @@ export default function IssueDetailPage({
             <span className="text-muted-foreground">Severity</span>
             <SeverityBadge severity={issue.severity} />
           </div>
-          <div className="flex justify-between">
+          <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Assignee</span>
-            <span>{issue.assignee?.name || "Unassigned"}</span>
+            <Select
+              value={issue.assignee?._id || "unassigned"}
+              onValueChange={(v) =>
+                v && handleAssign(v === "unassigned" ? "" : v)
+              }
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unassigned">Unassigned</SelectItem>
+                {members.map((m) => (
+                  <SelectItem key={m.user._id} value={m.user._id}>
+                    {m.user.name || m.user.email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           {issue.description && (
             <div className="pt-2">

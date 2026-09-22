@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -88,6 +89,14 @@ export default function RegisterPage() {
               {isSubmitting ? "Creating account..." : "Create account"}
             </Button>
           </form>
+          <div className="flex items-center justify-center my-2">
+            <p>
+              Already have an Account?{" "}
+              <Link href="/login" className="text-blue-400">
+                Log in
+              </Link>
+            </p>
+          </div>
         </CardContent>
       </Card>
     </main>

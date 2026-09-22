@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { NotificationBell } from "@/components/notification-bell";
 import { SearchBar } from "@/components/search-bar";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { UserMenu } from "@/components/user-menu";
 
 export default function DashboardLayout({
   children,
@@ -23,7 +24,7 @@ export default function DashboardLayout({
     <div className="min-h-screen">
       <header className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b bg-background/95 px-6 py-3 backdrop-blur">
         <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="font-bold">
+          <Link href="/" className="font-bold">
             DevDesk
           </Link>
           <nav className="flex items-center gap-4">
@@ -48,6 +49,7 @@ export default function DashboardLayout({
         <div className="flex items-center gap-1">
           <ThemeToggle />
           <NotificationBell />
+          <UserMenu />
         </div>
       </header>
       {children}

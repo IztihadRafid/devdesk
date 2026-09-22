@@ -6,6 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Bug } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 interface Member {
   user: { _id: string; name: string; email: string };
   role: string;
@@ -38,9 +45,12 @@ export default function ProjectDetailPage({
   const [issues, setIssues] = useState<Issue[]>([]);
   const [email, setEmail] = useState("");
   const [issueTitle, setIssueTitle] = useState("");
+  const [issueType, setIssueType] = useState("bug");
+  const [issuePriority, setIssuePriority] = useState("medium");
+  const [issueSeverity, setIssueSeverity] = useState("medium");
   const [error, setError] = useState("");
   const [issueError, setIssueError] = useState("");
-
+  const [role, setRole] = useState("developer");
   async function loadProject() {
     const res = await fetch(`/api/projects/${id}`);
     const data = await res.json();
@@ -64,7 +74,7 @@ export default function ProjectDetailPage({
     const res = await fetch(`/api/projects/${id}/members`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, role: "developer" }),
+      body: JSON.stringify({ email, role }),
     });
     const data = await res.json();
     if (!data.success) {
@@ -81,7 +91,12 @@ export default function ProjectDetailPage({
     const res = await fetch(`/api/projects/${id}/issues`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: issueTitle }),
+      body: JSON.stringify({
+        title: issueTitle,
+        type: issueType,
+        priority: issuePriority,
+        severity: issueSeverity,
+      }),
     });
     const data = await res.json();
     if (!data.success) {
@@ -89,6 +104,9 @@ export default function ProjectDetailPage({
       return;
     }
     setIssueTitle("");
+    setIssueType("bug");
+    setIssuePriority("medium");
+    setIssueSeverity("medium");
     loadIssues();
   }
 
@@ -133,6 +151,17 @@ export default function ProjectDetailPage({
               onChange={(e) => setEmail(e.target.value)}
               required
             />
+            <Select value={role} onValueChange={(v) => v && setRole(v)}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="developer">Developer</SelectItem>
+                <SelectItem value="tester">Tester</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="viewer">Viewer</SelectItem>
+              </SelectContent>
+            </Select>
             <Button type="submit">Add</Button>
           </form>
           {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
@@ -144,18 +173,74 @@ export default function ProjectDetailPage({
           <CardTitle>New issue</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleCreateIssue} className="flex gap-2">
+          <form onSubmit={handleCreateIssue} className="space-y-3">
             <Input
               placeholder="Issue title"
               value={issueTitle}
               onChange={(e) => setIssueTitle(e.target.value)}
               required
             />
-            <Button type="submit">Create</Button>
+            <div className="flex items-center justify-around gap-2">
+              <div className="space-y-1">
+                <label className="text-sm font-medium ">Type</label>
+                <Select
+                  value={issueType}
+                  onValueChange={(v) => v && setIssueType(v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bug">Bug</SelectItem>
+                    <SelectItem value="task">Task</SelectItem>
+                    <SelectItem value="feature">Feature</SelectItem>
+                    <SelectItem value="improvement">Improvement</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium ">Priority</label>
+                <Select
+                  value={issuePriority}
+                  onValueChange={(v) => v && setIssuePriority(v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    <SelectItem value="urgent">Urgent</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Severity</label>
+
+                <Select
+                  value={issueSeverity}
+                  onValueChange={(v) => v && setIssueSeverity(v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    <SelectItem value="critical">Critical</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Button type="submit">Create issue</Button>
+            {issueError && <p className="text-sm text-red-500">{issueError}</p>}
           </form>
-          {issueError && (
-            <p className="mt-2 text-sm text-red-500">{issueError}</p>
-          )}
         </CardContent>
       </Card>
 

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email"),
@@ -88,6 +89,14 @@ export default function LoginPage() {
             >
               Continue with Google
             </Button>
+          </div>
+          <div className="flex items-center justify-center my-2">
+            <p>
+              Don`t have Account?{" "}
+              <Link href="/register" className="text-blue-400">
+                Register
+              </Link>
+            </p>
           </div>
         </CardContent>
       </Card>
