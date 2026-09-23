@@ -6,16 +6,19 @@ export interface IUser {
   passwordHash?: string;
   image?: string;
   provider: "credentials" | "google";
+   isDeleted: boolean;
   createdAt: Date;
 }
+
 
 const userSchema = new Schema<IUser>(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    passwordHash: { type: String }, 
+    passwordHash: { type: String },
     image: { type: String },
     provider: { type: String, enum: ["credentials", "google"], default: "credentials" },
+    isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

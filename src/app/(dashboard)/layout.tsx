@@ -18,6 +18,7 @@ export default function DashboardLayout({
     { href: "/dashboard", label: "Dashboard" },
     { href: "/projects", label: "Projects" },
     { href: "/ai", label: "AI Assistant" },
+    { href: "/settings", label: "Settings" },
   ];
 
   return (

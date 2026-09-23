@@ -62,11 +62,13 @@ export async function PATCH(
     return NextResponse.json({ success: false, message: "Not found" }, { status: 404 });
   }
 
-  const role = await getUserProjectRole(session.user.id, issue.project.toString());
+   const role = await getUserProjectRole(session.user.id, issue.project.toString());
   const isAssignedToMe = issue.assignee?.toString() === session.user.id;
+  const isReportedByMe = issue.reporter.toString() === session.user.id;
 
   const canEditFully = hasPermission(role, "editAnyIssue");
-  const canEditAsAssignee = hasPermission(role, "editOwnAssignedIssue") && isAssignedToMe;
+  const canEditAsAssignee =
+    hasPermission(role, "editOwnAssignedIssue") && (isAssignedToMe || isReportedByMe);
 
   if (!canEditFully && !canEditAsAssignee) {
     return NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 });
