@@ -59,16 +59,14 @@ export function SearchBar() {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <div className="relative w-full max-w-sm">
-          <Search className="text-muted-foreground absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2" />
-          <Input
-            placeholder="Search projects, issues..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="pl-8"
-          />
-        </div>
+      <PopoverTrigger className="relative w-full max-w-sm block">
+        <Search className="text-muted-foreground absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2" />
+        <Input
+          placeholder="Search projects, issues..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="pl-8"
+        />
       </PopoverTrigger>
       <PopoverContent className="w-80 p-2" align="start" initialFocus={false}>
         {projects.length === 0 && issues.length === 0 && (

@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/db";
 import Project from "@/models/Project";
 import User from "@/models/User";
 import { getUserProjectRole, hasPermission } from "@/lib/authz";
+import { Types } from "mongoose";
 
 const addMemberSchema = z.object({
   email: z.string().email(),
@@ -49,8 +50,8 @@ export async function POST(
   }
 
   const alreadyMember = project.members.some(
-    (m) => m.user.toString() === userToAdd._id.toString()
-  );
+  (m: { user: Types.ObjectId }) => m.user.toString() === userToAdd._id.toString()
+);
   if (alreadyMember) {
     return NextResponse.json(
       { success: false, message: "User is already a member" },

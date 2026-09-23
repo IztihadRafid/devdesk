@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { connectDB } from "@/lib/db";
 import Project from "@/models/Project";
 import { getUserProjectRole, hasPermission } from "@/lib/authz";
+import { Types } from "mongoose";
 
 export async function DELETE(
   req: Request,
@@ -35,7 +36,7 @@ export async function DELETE(
     );
   }
 
-  project.members = project.members.filter((m) => m.user.toString() !== userId);
+ project.members = project.members.filter((m: { user: Types.ObjectId }) => m.user.toString() !== userId);
   await project.save();
 
   return NextResponse.json({ success: true });

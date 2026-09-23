@@ -53,9 +53,9 @@ if (!rateLimit.allowed) {
   try {
  
     const recentHistory = conversation.messages.slice(-10);
-    const historyText = recentHistory
-      .map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
-      .join("\n\n");
+   const historyText = recentHistory
+  .map((m: { role: string; content: string }) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
+  .join("\n\n");
 
     const reply = await callAI(SYSTEM_PROMPT, historyText, 800);
 

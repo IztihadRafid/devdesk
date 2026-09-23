@@ -42,6 +42,7 @@ export function hasPermission(
   return rolePermissions[role].includes(permission);
 }import { connectDB } from "@/lib/db";
 import Project from "@/models/Project";
+import { Types } from "mongoose";
 
 
 
@@ -53,6 +54,6 @@ export async function getUserProjectRole(
   const project = await Project.findById(projectId);
   if (!project) return undefined;
 
-  const member = project.members.find((m) => m.user.toString() === userId);
+const member = project.members.find((m: { user: Types.ObjectId; role: string }) => m.user.toString() === userId);
   return member?.role;
 }
